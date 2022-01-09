@@ -1,6 +1,8 @@
 # todo-list-fullstack
 Full-stack node, express, mongoDB to-do list web application
 
+A demo of this application can be accessed at https://gcsmeric.github.io/todo-list/
+
 To run:
 
 -Clone repository
