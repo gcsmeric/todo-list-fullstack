@@ -1,0 +1,144 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0px;
+    background: rgb(230, 251, 255);
+    overflow: hidden;
+}
+
+p {
+    margin: 0px;
+}
+
+ul {
+    padding-left: 0px;
+    list-style-type: none;
+}
+
+#content-wrapper {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#calendar-wrapper {
+    height: 94%;
+    width: 99%;
+    display: flex;
+}
+
+.day-box {
+    width: 100%;
+    background: rgb(255, 255, 255);
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 5px;
+    overflow: auto;
+    display: inline-block;
+}
+
+.day-title {
+    font-size: 20px;
+    font-weight: bolder;
+    margin-bottom: 20px;
+}
+
+.add-item-btn {
+    margin-top: 15px;
+    margin-bottom: 20px;
+    border-radius: 100%;
+    height: 30px;
+    width: 30px;
+    border: 1px solid black;
+    background: #b0b0b0;
+    /*box-shadow: 4px 4px 10px 0px rgba(49, 49, 49, 0.8)*/
+}
+
+.add-item-btn:hover {
+    background: grey;
+    transition: background 200ms linear;
+}
+
+.list-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.list-item-container {
+    display: flex;
+    border: 1px solid black;
+    background: #e7e7e7;
+    border-radius: 4px;
+    padding-left: 8px;
+    padding-right: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-bottom: 10px;   
+    word-wrap: break-word;
+}
+
+.list-item-text {
+    width: calc(100% - 42px);
+}
+
+.list-item-text:hover {
+    cursor: grab;
+}
+.push-btn {
+    font-size: larger;
+    vertical-align: auto;
+    font-weight: bold;
+    text-decoration: none;
+    color: black;
+}
+.push-btn:hover {
+    color: #4CAF50;
+    cursor: default;
+}
+
+.close-btn {
+    font-size: larger;
+    vertical-align: auto;
+    text-decoration: none;
+    color: black;
+}
+.close-btn:hover {
+    color: #4CAF50;
+    cursor: default;
+}
+
+.text-checked {
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+}
+
+.div-checked {
+    background: #b0b0b0;
+}
+
+#clear-btn-div {
+    text-align: center;
+}
+
+.clear-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 60px;
+    margin-bottom: 15px;
+}
+
+#authorize_button:hover {
+    background-color: black;
+}

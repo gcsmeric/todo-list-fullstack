@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>To Do List</title>
+        <link rel = "stylesheet" href = "WeeklySchedule.css" type = "text/css">
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <!--GOOGLE CALENDAR API SCRIPTS:-->
+        <!--Add buttons to initiate auth sequence and sign out-->
+        
+        <button id="authorize_button" style="display: inline-block; background-color: #FAFBFC;
+        color: white; padding: 10px 15px; text-align: center;
+        text-decoration: none; font-size: 16px; cursor: pointer;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: black;
+        border: 1px solid rgba(27, 31, 35, 0.3); border-radius: 6px;"
+        onmouseover='this.style.background= "grey";'
+        onmouseleave='this.style.background="#FAFBFC"'>
+        Google Calendar Sign-In</button>
+        <button id="signout_button" style="display: none; background-color: #FAFBFC;
+        color: white; padding: 10px 15px; text-align: center;
+        text-decoration: none; font-size: 16px; cursor: pointer;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: black;
+        border: 1px solid rgba(27, 31, 35, 0.3); border-radius: 6px;"
+        onmouseover='this.style.background= "#grey";'
+        onmouseleave='this.style.background="#FAFBFC"'>
+        Sign Out</button>
+        <input type="checkbox" class="alertCheckBox" name="alertCheckBox">
+        <label for="alertCheckBox">Google Calendar Sign-in Alerts</label> 
+        
+        <script type="text/javascript">
+          
+          // Client ID and API key from the Developer Console
+          var CLIENT_ID = '735950754682-kjcrr91cst6k72s5r3jbhv9uvs4ds3vn.apps.googleusercontent.com';
+          var API_KEY = 'AIzaSyAkfepvZw9dJrxQiELRQQCoKrVSvl38FDE';
+
+          // Array of API discovery doc URLs for APIs used by the quickstart
+          var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+
+          // Authorization scopes required by the API; multiple scopes can be
+          // included, separated by spaces.
+          var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+
+          var authorizeButton = document.getElementById('authorize_button');
+          var signoutButton = document.getElementById('signout_button');
+
+
+          //  On load, called to load the auth2 library and API client library.
+
+          function handleClientLoad() {
+            gapi.load('client:auth2', initClient);
+          }
+
+          //Initializes the API client library and sets up sign-in state 
+          //listeners.
+
+          function initClient() {
+            gapi.client.init({
+              apiKey: API_KEY,
+              clientId: CLIENT_ID,
+              discoveryDocs: DISCOVERY_DOCS,
+              scope: SCOPES
+            }).then(function () {
+              // Listen for sign-in state changes.
+              gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+              // Handle the initial sign-in state.
+              updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+              authorizeButton.onclick = handleAuthClick;
+              signoutButton.onclick = handleSignoutClick;
+            }, function(error) {
+              alert(JSON.stringify(error, null, 2));
+            });
+          }
+
+
+          //Called when the signed in status changes, to update the UI
+          //appropriately. After a sign-in, the API is called.
+
+          function updateSigninStatus(isSignedIn) {
+            if (isSignedIn) {
+              authorizeButton.style.display = 'none';
+              signoutButton.style.display = 'inline-block';
+              if (document.querySelector('.alertCheckBox').checked) {
+                alert("Google Calendar Sign-in succesful!");
+              }
+              fetchAndUpdateEvents();
+            } else {
+              authorizeButton.style.display = 'inline-block';
+              signoutButton.style.display = 'none';
+            }
+          }
+
+          // Sign in the user upon button click.
+
+          function handleAuthClick(event) {
+            gapi.auth2.getAuthInstance().signIn();
+          }
+
+
+          //Sign out the user upon button click.
+
+          function handleSignoutClick(event) {
+            gapi.auth2.getAuthInstance().signOut();
+          }
+
+          //Retrieve user's calendar events and add to the calendar
+          // the events in the upcoming week that haven't yet been added 
+          //to the calendar
+
+          function fetchAndUpdateEvents() {
+            gapi.client.calendar.events.list({
+              'calendarId': 'primary',
+              'timeMin': (new Date()).toISOString(),
+              'showDeleted': false,
+              'singleEvents': true,
+              'maxResults': 100,
+              'orderBy': 'startTime'
+            }).then(function(response) {
+              var events = response.result.items;
+
+              if (events.length > 0) {
+                var newItems = false;
+                for (i = 0; i < events.length; i++) {
+                  var event = events[i];
+                  var when = event.start.dateTime;
+                  if (!when) {
+                    when = event.start.date;
+                  }
+                  //isolate yyyy-mm-dd date formate
+                  when = when.slice(0, 10);
+                  //store event day, month and year into vars
+                  var ddEvent = when.slice(8, 10);
+                  var mmEvent = when.slice(5, 7);
+                  var yyyyEvent = when.slice(0, 4);
+                  //find and save today's day, month and year
+                  var today = new Date();
+                  var ddToday = String(today.getDate()).padStart(2, '0');
+                  var mmToday = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+                  var yyyyToday = today.getFullYear();
+                  //calculate number of days from today to event
+                  const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+                  const currDay = new Date(yyyyToday, mmToday, ddToday);
+                  const eventDate = new Date(yyyyEvent, mmEvent, ddEvent);
+                  const diffDays = Math.round(Math.abs((eventDate - currDay) / oneDay));
+                  var currentDate = new Date();
+                  var weekDay = currentDate.getDay();
+                  if (weekDay == 0) {
+                    diffDaysMax = 6;
+                  }
+                  else diffDaysMax = 7;
+                  //if the calendar event is soon enough to be added to to-do list, add it
+                  if (diffDays<diffDaysMax) {
+                    console.log(day);
+                    //find which day the event takes place
+                    var eventDay = (weekDay += diffDays) % 7;
+                    var dayIndices = [5, 0, 1, 2, 3, 4, 5];
+                    var dayIndex = dayIndices[eventDay];
+                    var day = days[dayIndex];
+                    
+                    //check if the element has previously been added to the list
+                    alreadyExists = false;
+                    items = document.getElementsByClassName("list-item-text");
+                    for (var i = 0; i<items.length; i++) {
+                      if (items[i].innerHTML == event.summary) {
+                        alreadyExists = true;
+                        break;
+                      }
+                    }
+                    //add event to list if it hasn't yet been added
+                    if (!alreadyExists) {
+                      newItems = true;
+                      //add imported item to database
+                      document.getElementById(day + "-input").value = event.summary;
+                      addToList(day);
+                    }
+                  }
+                }
+                if (!newItems) {
+                  if (document.querySelector('.alertCheckBox').checked) {
+                    alert('No new items in the upcoming week were found in your calendar!');
+                  }
+                }
+              } else {
+                alert('No upcoming events found.');
+              }
+            });
+          }
+        </script>
+        <script async defer src="https://apis.google.com/js/api.js"
+          onload="this.onload=function(){};handleClientLoad()"
+          onreadystatechange="if (this.readyState === 'complete') this.onload()">
+        </script>
+
+        <div id = "content-wrapper">
+            <div id = "calendar-wrapper">
+                <div class = "day-box" id = "mon">
+                    <div class = "day-title">
+                        <p>Monday</p>
+                    </div>
+                    <div class = "day-buttons">
+                        <input type = "text" class = "list-input" id = "mon-input" placeholder = "Add item...">
+                        <button type = "button" onclick = "addToList('mon'); saveItems();" class = "add-item-btn" id = "add-item-mon">+</button>
+                    </div>
+                    <div class = "day-list">
+                        <ul id = "mon-list">
+                        </ul>
+                    </div>
+                </div>
+                <div class = "day-box" id = "tue">
+                    <div class = "day-title">
+                        <p>Tuesday</p>
+                    </div>
+                    <div class = "day-buttons">
+                        <input type = "text" class = "list-input" id = "tue-input" placeholder = "Add item...">
+                        <button type = "button" onclick = "addToList('tue'); saveItems();" class = "add-item-btn" id = "add-item-tue">+</button>
+                    </div>
+                    <div class = "day-list">
+                        <ul id = "tue-list">
+                        </ul>
+                    </div>
+                </div>
+                <div class = "day-box" id = "wed">
+                    <div class = "day-title">
+                        <p>Wednesday</p>
+                    </div>
+                    <div class = "day-buttons">
+                        <input type = "text" class = "list-input" id = "wed-input" placeholder = "Add item...">
+                        <button type = "button" onclick = "addToList('wed'); saveItems();" class = "add-item-btn" id = "add-item-wed">+</button>
+                    </div>
+                    <div class = "day-list">
+                        <ul id = "wed-list">
+                        </ul>
+                    </div>
+                </div>
+                <div class = "day-box" id = "thu">
+                    <div class = "day-title">
+                        <p>Thursday</p>
+                    </div>
+                    <div class = "day-buttons">
+                        <input type = "text" class = "list-input" id = "thu-input" placeholder = "Add item...">
+                        <button type = "button" onclick = "addToList('thu'); saveItems();" class = "add-item-btn" id = "add-item-thu">+</button>
+                    </div>
+                    <div class = "day-list">
+                        <ul id = "thu-list">
+                        </ul>
+                    </div>
+                </div>
+                <div class = "day-box" id = "fri">
+                    <div class = "day-title">
+                        <p>Friday</p>
+                    </div>
+                    <div class = "day-buttons">
+                        <input type = "text" class = "list-input" id = "fri-input" placeholder = "Add item...">
+                        <button type = "button" onclick = "addToList('fri'); saveItems();" class = "add-item-btn" id = "add-item-fri">+</button>
+                    </div>
+                    <div class = "day-list">
+                        <ul id = "fri-list">
+                        </ul>
+                    </div>
+                </div>
+                <div class = "day-box" id = "wkd">
+                    <div class = "day-title">
+                        <p>Weekend</p>
+                    </div>
+                    <div class = "day-buttons">
+                        <input type = "text" class = "list-input" id = "wkd-input" placeholder = "Add item...">
+                        <button type = "button" onclick = "addToList('wkd'); saveItems();" class = "add-item-btn" id = "add-item-wkd">+</button>
+                    </div>
+                    <div class = "day-list">
+                        <ul id = "wkd-list">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!--<script src = "WeeklySchedule.js"></script>-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity=
+        "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
+        crossorigin="anonymous">
+    </script>
+    <script src="script.js"></script>
+</html>
