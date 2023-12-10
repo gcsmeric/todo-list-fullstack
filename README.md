@@ -13,4 +13,4 @@ To run:
 
 -Host server locally on local host 8000 by executing the following command in terminal in working directory: 'node app.js'
 
--Access application on http://localhost:8000/ URL
+-Access application at http://localhost:8000/
